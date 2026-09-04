@@ -33,3 +33,5 @@ extensão Live Server do VS Code.
 Todo push ou pull request para `main` dispara o workflow **Testes**, que
 instala o Node 20 e roda `node --test`. A branch `main` está protegida por
 um Ruleset que exige pull request + esse check passando antes do merge.
+teste de protecao
+
