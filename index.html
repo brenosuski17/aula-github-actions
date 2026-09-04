@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cadastro de Pessoa Física</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #161922;
+    --border: #262b38;
+    --text: #e7e9ee;
+    --muted: #8b93a7;
+    --accent: #5b8cff;
+    --error: #ff6b6b;
+    --ok: #3ecf8e;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    padding: 48px 20px;
+  }
+
+  main {
+    width: 100%;
+    max-width: 480px;
+  }
+
+  h1 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+
+  p.subtitulo {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin: 0 0 28px;
+    line-height: 1.5;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+  }
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  label.checkbox {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    color: var(--text);
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="date"] {
+    background: #0c0e13;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    padding: 10px 12px;
+    font-size: 0.95rem;
+  }
+
+  input:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+  }
+
+  button {
+    margin-top: 4px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 11px 16px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  button:hover { filter: brightness(1.08); }
+  button:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+  #resultado {
+    margin-top: 20px;
+    padding: 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    display: none;
+  }
+
+  #resultado.sucesso {
+    display: block;
+    background: rgba(62, 207, 142, 0.1);
+    border: 1px solid rgba(62, 207, 142, 0.35);
+    color: var(--ok);
+  }
+
+  #resultado.erro {
+    display: block;
+    background: rgba(255, 107, 107, 0.08);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+  }
+
+  #resultado.erro ul {
+    margin: 8px 0 0;
+    padding-left: 18px;
+    color: var(--error);
+  }
+
+  #resultado.erro p.titulo {
+    margin: 0;
+    color: var(--text);
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Cadastro de Pessoa Física</h1>
+  <p class="subtitulo">
+    Este formulário chama o mesmo <code>validar(pessoa)</code> usado pela
+    suíte de testes e pelo CI — a regra é escrita uma vez e verificada em
+    todo lugar.
+  </p>
+
+  <form id="form-cadastro" novalidate>
+    <label for="nome">
+      Nome completo
+      <input type="text" id="nome" name="nome" />
+    </label>
+
+    <label for="cpf">
+      CPF
+      <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" />
+    </label>
+
+    <label for="email">
+      E-mail
+      <input type="email" id="email" name="email" />
+    </label>
+
+    <label for="data_nascimento">
+      Data de nascimento
+      <input type="date" id="data_nascimento" name="data_nascimento" />
+    </label>
+
+    <label class="checkbox" for="possui_cnh">
+      <input type="checkbox" id="possui_cnh" name="possui_cnh" />
+      Possui CNH
+    </label>
+
+    <button type="submit">Validar cadastro</button>
+  </form>
+
+  <div id="resultado"></div>
+</main>
+
+<script src="pessoaFisica.js"></script>
+<script>
+  var form = document.getElementById('form-cadastro');
+  var resultado = document.getElementById('resultado');
+
+  form.addEventListener('submit', function (evento) {
+    evento.preventDefault();
+
+    var pessoa = {
+      nome: form.nome.value,
+      cpf: form.cpf.value,
+      email: form.email.value,
+      data_nascimento: form.data_nascimento.value,
+      possui_cnh: form.possui_cnh.checked,
+    };
+
+    var erros = window.PessoaFisica.validar(pessoa);
+
+    resultado.className = '';
+    resultado.innerHTML = '';
+
+    if (erros.length === 0) {
+      resultado.className = 'sucesso';
+      resultado.textContent = 'Cadastro válido!';
+      return;
+    }
+
+    resultado.className = 'erro';
+    var titulo = document.createElement('p');
+    titulo.className = 'titulo';
+    titulo.textContent = erros.length === 1 ? '1 erro encontrado:' : erros.length + ' erros encontrados:';
+    resultado.appendChild(titulo);
+
+    var lista = document.createElement('ul');
+    erros.forEach(function (erro) {
+      var item = document.createElement('li');
+      item.textContent = erro;
+      lista.appendChild(item);
+    });
+    resultado.appendChild(lista);
+  });
+</script>
+</body>
+</html>
