@@ -1,4 +1,4 @@
-const { test } = reconst { test } = require('node:test');
+const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { cpfValido } = require('./pessoaFisica');
 
