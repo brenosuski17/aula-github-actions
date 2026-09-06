@@ -1,0 +1,6 @@
+.git
+.github
+*.test.js
+README.md
+Aula.md
+node_modules
