@@ -7,10 +7,6 @@ on:
     branches: [main]
 
 jobs:
-  # ---------------------------------------------------------------
-  # Job 1: roda sempre, em push OU pull request. Se falhar, o job
-  # de build-and-deploy abaixo nem começa (veja o "needs" dele).
-  # ---------------------------------------------------------------
   testar:
     runs-on: ubuntu-latest
     steps:
@@ -25,10 +21,6 @@ jobs:
       - name: Rodar a suíte
         run: node --test
 
-  # ---------------------------------------------------------------
-  # Job 2: só roda se "testar" passou (needs), e só em push direto
-  # na main (não em pull request — PR não deve fazer deploy).
-  # ---------------------------------------------------------------
   build-and-deploy:
     needs: testar
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -60,7 +52,11 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
-      - name: Disparar deploy no App Runner
-        run: |
-          aws apprunner start-deployment \
-            --service-arn ${{ secrets.APPRUNNER_SERVICE_ARN }}
+      - name: Deploy no ECS Express
+        uses: aws-actions/amazon-ecs-deploy-express-service@v1
+        with:
+          service-name: cadastro-pessoa-fisica
+          image: ${{ steps.login-ecr.outputs.registry }}/cadastro-pessoa-fisica:${{ github.sha }}
+          execution-role-arn: arn:aws:iam::337480111446:role/service-role/ecsTaskExecutionRole
+          infrastructure-role-arn: arn:aws:iam::337480111446:role/service-role/ecsInfrastructureRoleForExpressServices
+          container-port: '80'
